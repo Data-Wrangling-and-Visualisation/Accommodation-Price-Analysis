@@ -171,5 +171,5 @@ cython_debug/
 .pypirc
 
 # our own additions
-/data
-/.dvc
+data/
+.dvc/
