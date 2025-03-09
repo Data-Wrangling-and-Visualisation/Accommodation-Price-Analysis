@@ -1,2 +1,8 @@
 dvc
 dvc-ssh
+kagglehub
+pandas
+numpy
+folium
+shapely
+matplotlib
