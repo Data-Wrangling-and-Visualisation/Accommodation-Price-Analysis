@@ -1,5 +1,0 @@
-[core]
-    remote = storage
-['remote "storage"']
-    url = ssh://dvc_user@31.15.16.38
-    keyfile = C:\Users\david\Desktop\ml_prep\dvc_key
