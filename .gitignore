@@ -173,3 +173,4 @@ cython_debug/
 # our own additions
 data/
 .dvc/
+/data
