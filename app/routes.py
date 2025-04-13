@@ -74,7 +74,7 @@ def predict():
     date, input_data = get_input_data()
     
     inflation_factor = calculate_inflation_factor("2019-01-01", date, inflation_data, forecast_value=0.1)
-    prediction = inflation_factor * math.exp(model.predict(input_data)[0])
+    prediction = inflation_factor * input_data.iloc[0]['total_meters'] * math.exp(model.predict(input_data)[0])
     
     return jsonify({'price': prediction})
 
@@ -83,7 +83,7 @@ def predict_with_importance():
     date, input_data = get_input_data()
 
     inflation_factor = calculate_inflation_factor("2019-01-01", date, inflation_data, forecast_value=0.1)
-    prediction = inflation_factor * math.exp(model.predict(input_data)[0])
+    prediction = inflation_factor * input_data.iloc[0]['total_meters'] * math.exp(model.predict(input_data)[0])
     
     shap_values = explainer.shap_values(input_data)
     feature_names = input_data.columns
