@@ -11,6 +11,106 @@ header {
     margin-bottom: 20px;
     text-align: center;
 }
+.mode-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+#ai-banner {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+}
+
+.ai-callout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 3px solid #8B0000;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+    animation: float 3s ease-in-out infinite;
+}
+
+.ai-callout h1 {
+    color: #8B0000;
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #00000022;
+}
+
+.ai-callout img {
+    width: 220px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.ai-arrows {
+    display: flex;
+    gap: 16px;
+    font-size: 36px;
+    color: #8B0000;
+    justify-content: center;
+}
+
+.ai-arrows .arrow {
+    animation: pulse-arrow 1.5s infinite ease-in-out;
+}
+
+.ai-arrows .arrow1 {
+    animation-delay: 0s;
+}
+.ai-arrows .arrow2 {
+    animation-delay: 0.3s;
+}
+.ai-arrows .arrow3 {
+    animation-delay: 0.6s;
+}
+
+/* Animations */
+@keyframes pulse-arrow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+#toggle-mode-btn {
+    padding: 10px 16px;
+    background: linear-gradient(to right, #4caf50, #2196f3);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#toggle-mode-btn:hover {
+    background: linear-gradient(to right, #45a049, #1976d2);
+}
 
 /* Controls Styling */
 .controls {
