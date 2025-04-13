@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 import shap
 import math
-from .utils import load_data, filter_data, calculate_inflation_factor, calculate_dists
+from utils import load_data, filter_data, calculate_inflation_factor, calculate_dists
 
 app = Flask(__name__)
 df = load_data()
@@ -28,9 +28,21 @@ expected_feature_names = [
     'New mortgages', 'New mortgage amount (millions)', 'dist_to_center_km'
 ]
 
+from flask import Flask, render_template, send_from_directory
+
+app = Flask(__name__)
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/js/<path:path>')
+def serve_js(path):
+    return send_from_directory('static/js', path)
+
+@app.route('/css/<path:path>')
+def serve_css(path):
+    return send_from_directory('static/css', path)
 
 @app.route('/data', methods=['GET'])
 def get_data():
