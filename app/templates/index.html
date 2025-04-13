@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
@@ -26,7 +27,9 @@
         <h1>Визуализация рынка недвижимости Сочи</h1>
         <p>Интерактивная карта с фильтрами по времени, этажности и кластерам</p>
     </header>
-
+    <section class="mode-toggle">
+      <button id="toggle-mode-btn">Симулятор Набиуленной</button>
+    </section>
     <!-- Controls Section -->
     <section class="controls">
         <div class="filter-group">
@@ -49,7 +52,32 @@
             </select>
         </div>
     </section>
+    <!-- AI Mode Banner & Image -->
+    <section id="ai-banner">
+      <div class="ai-callout">
+        <h1>Powered by AI</h1>
+        <img src="https://s0.rbk.ru/v6_top_pics/media/img/0/86/347395357853860.jpeg"
+             alt="Elvira Nabiullina" />
+        <div class="ai-arrows">
+          <div class="arrow arrow1">↑</div>
+          <div class="arrow arrow2">↑</div>
+          <div class="arrow arrow3">↑</div>
+        </div>
+      </div>
+    </section>
 
+    <!-- AI Mode Controls -->
+    <section id="ai-controls" style="display:none; margin-top:20px;">
+      <h2>Гадание на квартирной гуще</h2>
+      <form id="ai-form">
+        <label>Дата: <input type="date" name="date" required value="2025-01-02"></label>
+        <label>Этаж: <input type="number" name="floor" value="5"></label>
+        <label>Комнаты: <input type="number" name="rooms_count" value="2"></label>
+        <label>Этажность: <input type="number" name="floors_count" value="9"></label>
+        <label>Метраж: <input type="number" name="total_meters" value="85"></label>
+        <button type="submit">Запуск ИИ предсказания</button>
+      </form>
+    </section>
     <!-- Map and Legend Section -->
     <main id="map-legend-container">
         <!-- Map Container -->
