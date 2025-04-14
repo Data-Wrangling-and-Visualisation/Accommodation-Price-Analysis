@@ -16,6 +16,45 @@ function createDetailedPriceScale(minValue, maxValue, numCategories) {
   return d3.scaleLinear().domain(domain).range(range);
 }
 
+// Функция для извлечения параметров из формы AI
+function getAIFormParameters(form) {
+  const formData = new FormData(form);
+  const params = Object.fromEntries(formData.entries());
+  // Приведение типов
+  params.date = new Date(params.date).toISOString().split('T')[0];
+  params.floor = parseInt(params.floor);
+  params.rooms_count = parseInt(params.rooms_count);
+  params.floors_count = parseInt(params.floors_count);
+  params.total_meters = parseFloat(params.total_meters);
+  return params;
+}
+
+// Функция для вызова API предсказания
+async function callExtendedPredictionAPI(payload) {
+  const res = await fetch('/predict_with_importance', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+async function callPredictionAPI(payload) {
+  const res = await fetch('/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+// Функция для отрисовки тепловой карты (heatmap)
+function renderHeatmap(heatmapData) {
+  // heatmapData — массив формата [lat, lon, price]
+  drawHeatmap(heatmapData);
+}
+
+// Основная инициализация
 async function init() {
   try {
     const response = await fetch('/data');
@@ -31,7 +70,7 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// Mode toggle
+// Переключатель режимов
 document.getElementById('toggle-mode-btn').addEventListener('click', () => {
   mode = (mode === 'historical') ? 'ai' : 'historical';
 
@@ -45,42 +84,38 @@ document.getElementById('toggle-mode-btn').addEventListener('click', () => {
   if (!aiMode) updateMap();
 });
 
-// AI Form submit
+// Обработка отправки формы AI
 document.getElementById('ai-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-
   clearMap();
 
-  const formData = new FormData(e.target);
-  const commonParams = Object.fromEntries(formData.entries());
-  commonParams.date = new Date(commonParams.date).toISOString().split('T')[0];
-  commonParams.floor = parseInt(commonParams.floor);
-  commonParams.rooms_count = parseInt(commonParams.rooms_count);
-  commonParams.floors_count = parseInt(commonParams.floors_count);
-  commonParams.total_meters = parseFloat(commonParams.total_meters);
+  // 1. Извлечение параметров формы
+  const commonParams = getAIFormParameters(e.target);
 
+  // 2. Получение данных и выбор случайной выборки
   const response = await fetch('/data');
   const allData = await response.json();
   const sample = allData.sort(() => 0.5 - Math.random()).slice(0, 50);
 
+  // 3. Для каждой точки выполняется вызов API и формирование точек для heatmap
   const heatmapPoints = await Promise.all(sample.map(async (point) => {
-    const payload = {
-      ...commonParams,
-      latitude: point.latitude,
-      longitude: point.longitude
+    // Расширяем параметры из формы координатами из выборки
+    const payload = { 
+      ...commonParams, 
+      latitude: point.latitude, 
+      longitude: point.longitude 
     };
 
-    const res = await fetch('/predict_with_importance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await res.json();
+    const result = await callPredictionAPI(payload);
     return { lat: payload.latitude, lon: payload.longitude, price: result.price };
   }));
 
+  // Приводим точки к формату для отрисовки heatmap
   const formatted = heatmapPoints.map(p => [p.lat, p.lon, p.price]);
-  drawHeatmap(formatted);
+  
+  // 4. Отрисовка heatmap
+  renderHeatmap(formatted);
+
+  // Сохраняем для последующих операций (например, поиска ближайшей точки)
   aiPredictionPoints = heatmapPoints;
 });

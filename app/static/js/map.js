@@ -20,26 +20,15 @@ function initMap() {
     if (mode !== 'ai') return;
 
     const { lat, lng } = e.latlng;
-    const nearest = findNearestPredictedPoint(lat, lng);
-    if (!nearest) return;
 
-    const formData = new FormData(document.getElementById('ai-form'));
-    const payload = Object.fromEntries(formData.entries());
-    payload.latitude = nearest.lat;
-    payload.longitude = nearest.lon;
-    payload.date = new Date(payload.date).toISOString().split('T')[0];
-    payload.floor = parseInt(payload.floor);
-    payload.floors_count = parseInt(payload.floors_count);
-    payload.rooms_count = parseInt(payload.rooms_count);
-    payload.total_meters = parseFloat(payload.total_meters);
+    const commonParams = getAIFormParameters(document.getElementById('ai-form'));
+    const payload = { 
+      ...commonParams, 
+      latitude: lat, 
+      longitude: lng
+    };
 
-    const res = await fetch('/predict_with_importance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await res.json();
+    const result = await callExtendedPredictionAPI(payload);
     showSHAPPopup(lat, lng, result);
   });
 }
@@ -85,28 +74,21 @@ function drawHeatmap(points) {
   }).addTo(map);
 }
 
-function findNearestPredictedPoint(lat, lon) {
-  let minDist = Infinity;
-  let nearest = null;
-
-  for (const p of aiPredictionPoints) {
-    const d = Math.sqrt((p.lat - lat) ** 2 + (p.lon - lon) ** 2);
-    if (d < minDist) {
-      minDist = d;
-      nearest = p;
-    }
-  }
-  return nearest;
-}
-
 function showSHAPPopup(lat, lon, result) {
   const importance = result.feature_importance;
+
   const top = Object.entries(importance)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  const topFeatures = top
+    .map(([feature, value]) => `${feature}: ${(value).toFixed(2)}%`)
+    .join('<br>');
+
   const content = `
-    <strong>Предсказанная цена:</strong> ${Math.round(result.price).toLocaleString()} ₽<br>
+    <strong>Price predicted:</strong> ${Math.round(result.price).toLocaleString()} ₽<br>
+    <strong>Top-5 reasons:</strong><br>
+    ${topFeatures}
   `;
 
   L.popup()
