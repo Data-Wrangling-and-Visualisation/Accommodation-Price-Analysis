@@ -3,95 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ цен на недвижимость в Сочи</title>
-
-    <!-- External Libraries -->
+    <title>Анализ цен на недвижимость</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cbr-style.css') }}">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
-    <!-- Local Styles and Scripts -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script defer src="{{ url_for('static', filename='js/map.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/filters.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/legend.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
-    <!-- Header Section -->
-    <header>
-        <h1>Визуализация рынка недвижимости Сочи</h1>
-        <p>Интерактивная карта с фильтрами по времени, этажности и кластерам</p>
+    <header class="cbr-header">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='img/cbr-logo.png') }}" alt="ЦБ РФ глобус онлайн оффлайн везде и всюду" class="logo">
+                <h1>Сочинский филиал клуба фанатов Н</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#">Главная</a></li>
+                    <li><a href="#">Статистика</a></li>
+                    <li class="active"><a href="#">Анализ недвижимости</a></li>
+                    <li><a href="#">Данные</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
-    <section class="mode-toggle">
-      <button id="toggle-mode-btn">Симулятор Набиуллиной</button>
-    </section>
-    <!-- Controls Section -->
-    <section class="controls">
-        <div class="filter-group">
-            <label for="year-slider">Год:</label>
-            <input type="range" id="year-slider" min="2018" max="2025" value="2018">
-            <span id="year-value">2018</span>
+
+    <main class="cbr-main">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>Фильтры</h3>
+                <div class="filter-group">
+                    <label for="year-slider">Год:</label>
+                    <input type="range" id="year-slider" min="2018" max="2025" value="2018">
+                    <span id="year-value">2018</span>
+                </div>
+
+                <div class="filter-group">
+                    <label for="floor-slider">Мин. этаж:</label>
+                    <input type="range" id="floor-slider" min="1" max="10" value="1">
+                    <span id="floor-value">1</span>
+                </div>
+
+                <div class="filter-group">
+                    <label for="color-mode">Цветовая шкала:</label>
+                    <select id="color-mode">
+                        <option value="cluster">Кластер</option>
+                        <option value="price">Цена за м²</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="ai-controls" style="display:none;">
+                <h3>Прогнозирование</h3>
+                <form id="ai-form">
+                    <div class="form-group">
+                        <label>Дата:</label>
+                        <input type="date" name="date" required value="2025-01-02">
+                    </div>
+                    <div class="form-group">
+                        <label>Этаж:</label>
+                        <input type="number" name="floor" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Комнаты:</label>
+                        <input type="number" name="rooms_count" value="2">
+                    </div>
+                    <div class="form-group">
+                        <label>Этажность:</label>
+                        <input type="number" name="floors_count" value="9">
+                    </div>
+                    <div class="form-group">
+                        <label>Метраж:</label>
+                        <input type="number" name="total_meters" value="85">
+                    </div>
+                    <button type="submit" class="cbr-button">Рассчитать</button>
+                </form>
+            </div>
+
+            <div class="sidebar-section" id="legend-container">
+                <h3>Легенда</h3>
+                <div id="legend"></div>
+            </div>
         </div>
 
-        <div class="filter-group">
-            <label for="floor-slider">Мин. этаж:</label>
-            <input type="range" id="floor-slider" min="1" max="10" value="1">
-            <span id="floor-value">1</span>
+        <div class="content">
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="mode-toggle">
+                    <button id="toggle-mode-btn" class="cbr-button">Переключить в режим прогнозирования</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>Динамика ипотечных ставок</h3>
+                <div id="chart"></div>
+            </div>
         </div>
-
-        <div class="filter-group">
-            <label for="color-mode">Цветовая шкала:</label>
-            <select id="color-mode">
-                <option value="cluster">Кластер</option>
-                <option value="price">Цена за м²</option>
-            </select>
-        </div>
-    </section>
-    <!-- AI Mode Banner & Image -->
-    <section id="ai-banner">
-      <div class="ai-callout">
-        <h1>Powered by AI</h1>
-        <img src="https://s0.rbk.ru/v6_top_pics/media/img/0/86/347395357853860.jpeg"
-             alt="Elvira Nabiullina" />
-        <div class="ai-arrows">
-          <div class="arrow arrow1">↑</div>
-          <div class="arrow arrow2">↑</div>
-          <div class="arrow arrow3">↑</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- AI Mode Controls -->
-    <section id="ai-controls" style="display:none; margin-top:20px;">
-      <h2>Гадание на квартирной гуще</h2>
-      <form id="ai-form">
-        <label>Дата: <input type="date" name="date" required value="2025-01-02"></label>
-        <label>Этаж: <input type="number" name="floor" value="5"></label>
-        <label>Комнаты: <input type="number" name="rooms_count" value="2"></label>
-        <label>Этажность: <input type="number" name="floors_count" value="9"></label>
-        <label>Метраж: <input type="number" name="total_meters" value="85"></label>
-        <button type="submit">Запуск ИИ предсказания</button>
-      </form>
-    </section>
-    <!-- Map and Legend Section -->
-    <main id="map-legend-container">
-        <!-- Map Container -->
-        <div id="map-container">
-            <div id="map"></div>
-        </div>
-
-        <!-- Legend Container -->
-        <aside id="legend-container">
-            <div id="legend"></div>
-        </aside>
-
     </main>
-            <div id="chart" style="margin: 40px auto; max-width: 900px;"></div>
-        <script src="js/mortgageChart.js" type="module"></script>
+
+    <footer class="cbr-footer">
+        <div class="footer-container">
+            <p>© 1998—2023 Центральный Банк Российской Федерации</p>
+            <p>Все права защищены</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/legend.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mortgageChart.js') }}" type="module"></script>
 </body>
 </html>

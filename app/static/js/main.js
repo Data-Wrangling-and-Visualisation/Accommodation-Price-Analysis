@@ -70,18 +70,21 @@ async function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 // Переключатель режимов
+// main.js - Update the mode toggle functionality
 document.getElementById('toggle-mode-btn').addEventListener('click', () => {
-  mode = (mode === 'historical') ? 'ai' : 'historical';
-
-  const aiMode = mode === 'ai';
-  document.querySelector('.controls').style.display = aiMode ? 'none' : 'flex';
-  document.getElementById('ai-banner').style.display = aiMode ? 'block' : 'none';
-  document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
-  document.getElementById('toggle-mode-btn').textContent = aiMode ? 'Исторические данные' : 'Симулятор Набиулинной';
-
-  clearMap();
-  if (!aiMode) updateMap();
+    mode = (mode === 'historical') ? 'ai' : 'historical';
+    const aiMode = mode === 'ai';
+    
+    document.querySelector('.sidebar-section:first-child').style.display = aiMode ? 'none' : 'block';
+    document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
+    document.getElementById('toggle-mode-btn').textContent = aiMode ? 
+        'Исторический режим' : 'Симулятор Набиуллиной';
+    
+    clearMap();
+    if (!aiMode) updateMap();
 });
+
+// Rest of the main.js remains the same
 
 // Обработка отправки формы AI
 document.getElementById('ai-form').addEventListener('submit', async (e) => {
