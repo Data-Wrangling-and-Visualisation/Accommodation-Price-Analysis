@@ -112,5 +112,13 @@ def predict_with_importance():
         'feature_importance': importance_dict
     })
 
+@app.route('/api/mortgage-data')
+def mortgage_data():
+    df = pd.read_csv('data/CBR_mortgage.csv')
+    df['date'] = pd.to_datetime(df['date'])
+    df.sort_values('date', inplace=True)
+    df['date'] = df['date'].dt.strftime('%Y-%m-%d')  # convert back to string
+    return jsonify(df.to_dict(orient='records'))
+
 if __name__ == '__main__':
     app.run(debug=True)
