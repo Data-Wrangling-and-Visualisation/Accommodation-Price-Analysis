@@ -20,11 +20,10 @@ function createDetailedPriceScale(minValue, maxValue, numCategories) {
 function getAIFormParameters(form) {
   const formData = new FormData(form);
   const params = Object.fromEntries(formData.entries());
-  // Приведение типов
   params.date = new Date(params.date).toISOString().split('T')[0];
-  params.floor = parseInt(params.floor);
-  params.rooms_count = parseInt(params.rooms_count);
-  params.floors_count = parseInt(params.floors_count);
+  params.floor = parseInt(params.floor, 10);
+  params.rooms_count = parseInt(params.rooms_count, 10);
+  params.floors_count = parseInt(params.floors_count, 10);
   params.total_meters = parseFloat(params.total_meters);
   return params;
 }
@@ -48,10 +47,10 @@ async function callPredictionAPI(payload) {
   return await res.json();
 }
 
-// Функция для отрисовки тепловой карты (heatmap)
-function renderHeatmap(heatmapData) {
-  // heatmapData — массив формата [lat, lon, price]
-  drawHeatmap(heatmapData);
+// Функция для отрисовки слоя Делоне (вместо heatmap)
+// heatmapData — массив формата [lat, lon, price]
+function renderDelaunay(heatmapData) {
+  drawDelaunayLayer(heatmapData);
 }
 
 // Основная инициализация
@@ -97,9 +96,8 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
   const allData = await response.json();
   const sample = allData.sort(() => 0.5 - Math.random()).slice(0, 50);
 
-  // 3. Для каждой точки выполняется вызов API и формирование точек для heatmap
-  const heatmapPoints = await Promise.all(sample.map(async (point) => {
-    // Расширяем параметры из формы координатами из выборки
+  // 3. Для каждой точки выполняется вызов API и формирование точек для отрисовки Делоне
+  const delaunayPoints = await Promise.all(sample.map(async (point) => {
     const payload = { 
       ...commonParams, 
       latitude: point.latitude, 
@@ -107,15 +105,12 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
     };
 
     const result = await callPredictionAPI(payload);
-    return { lat: payload.latitude, lon: payload.longitude, price: result.price };
+    return [point.latitude, point.longitude, result.price];
   }));
 
-  // Приводим точки к формату для отрисовки heatmap
-  const formatted = heatmapPoints.map(p => [p.lat, p.lon, p.price]);
-  
-  // 4. Отрисовка heatmap
-  renderHeatmap(formatted);
+  // 4. Отрисовка триангуляции Делоне
+  renderDelaunay(delaunayPoints);
 
   // Сохраняем для последующих операций (например, поиска ближайшей точки)
-  aiPredictionPoints = heatmapPoints;
+  aiPredictionPoints = delaunayPoints.map(p => ({ lat: p[0], lon: p[1], price: p[2] }));
 });
