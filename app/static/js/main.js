@@ -94,26 +94,35 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
   // 1. Извлечение параметров формы
   const commonParams = getAIFormParameters(e.target);
 
-  // 2. Получение данных и выбор случайной выборки
   const response = await fetch('/data');
   const allData = await response.json();
   const sample = allData.sort(() => 0.5 - Math.random()).slice(0, 50);
 
-  // 3. Для каждой точки выполняется вызов API и формирование точек для отрисовки Делоне
-  const delaunayPoints = await Promise.all(sample.map(async (point) => {
-    const payload = { 
-      ...commonParams, 
-      latitude: point.latitude, 
-      longitude: point.longitude 
-    };
-
-    const result = await callPredictionAPI(payload);
-    return [point.latitude, point.longitude, result.price];
+  // Prepare batch payload
+  const batchPayload = sample.map(point => ({
+    ...commonParams,
+    latitude: point.latitude,
+    longitude: point.longitude
   }));
 
-  // 4. Отрисовка триангуляции Делоне
+  // Call batch prediction API
+  const result = await fetch('/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(batchPayload)
+  });
+  const predictions = await result.json();
+
+  // Prepare Delaunay points
+  const delaunayPoints = sample.map((point, index) => [
+    point.latitude,
+    point.longitude,
+    predictions.prices[index]
+  ]);
+
+  // Render Delaunay triangulation with the predicted points
   renderDelaunay(delaunayPoints);
 
-  // Сохраняем для последующих операций (например, поиска ближайшей точки)
+  // Store prediction points for further operations
   aiPredictionPoints = delaunayPoints.map(p => ({ lat: p[0], lon: p[1], price: p[2] }));
 });
