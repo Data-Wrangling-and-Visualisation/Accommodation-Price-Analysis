@@ -5,36 +5,23 @@ let delaunayGroup;   // Group inside SVG for drawing triangles
 let aiPredictionPoints = [];
 let currentDelaunayData = null; // Store data to correctly rebuild it on zoom changes
 
+const MAX_POINTS = 1000;
+
 function initMap() {
   map = L.map('map').setView([43.6, 39.7], 12);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  markers = L.markerClusterGroup({
-    maxClusterRadius: 80,
-    spiderfyOnMaxZoom: true,
-    showCoverageOnHover: false
-  });
-  markers.addTo(map);
+  // Заменяем MarkerClusterGroup на обычную группу слоев
+  markers = L.layerGroup().addTo(map); // Теперь точки не кластеризуются
 
-  // Initialize SVG layer for Delaunay triangulation
+  // Инициализация SVG-слоя для Делоне
   initDelaunayOverlay();
-
-  // Update overlay and recalculate projections on map position or zoom change
   map.on('moveend zoomend', updateDelaunayOverlay);
-
-  // Handle click for AI prediction
   map.on('click', async (e) => {
     if (mode !== 'ai') return;
-
     const { lat, lng } = e.latlng;
     const commonParams = getAIFormParameters(document.getElementById('ai-form'));
-    const payload = { 
-      ...commonParams, 
-      latitude: lat, 
-      longitude: lng
-    };
-
+    const payload = { ...commonParams, latitude: lat, longitude: lng };
     const result = await callExtendedPredictionAPI(payload);
     showSHAPPopup(lat, lng, result);
   });
@@ -44,10 +31,17 @@ function updateMap() {
   if (mode !== 'historical') return;
   if (!markers) return;
 
-  const filteredData = filterData(data);
+  let filteredData = filterData(data);
+  if (filteredData.length > MAX_POINTS) {
+    filteredData = filteredData
+      .sort(() => 0.5 - Math.random())
+      .slice(0, MAX_POINTS);
+  }
   updateLegend();
 
-  markers.clearLayers();
+  // Очищаем обычные маркеры
+  markers.clearLayers(); 
+
   filteredData.forEach(item => {
     const color = getColor(item);
     const marker = L.circleMarker([item.latitude, item.longitude], {
@@ -58,12 +52,12 @@ function updateMap() {
       opacity: 1,
       fillOpacity: 0.8
     }).bindPopup(`
-      Price: ${d3.format(",")(item.price)} ₽<br>
-      Price/m²: ${d3.format(",.0f")(item.price_per_sqm_adjusted)} ₽<br>
-      Date: ${item.date}<br>
-      Cluster: ${item.cluster}
+      Цена: ${d3.format(",")(item.price)} ₽<br>
+      Цена/м²: ${d3.format(",.0f")(item.price_per_sqm)} ₽<br>
+      Дата: ${item.date}<br>
+      Кластер: ${item.cluster}
     `);
-    markers.addLayer(marker);
+    markers.addLayer(marker); // Добавляем маркеры напрямую
   });
 }
 

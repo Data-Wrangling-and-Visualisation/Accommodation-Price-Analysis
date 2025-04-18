@@ -5,7 +5,7 @@ const colorModes = {
     scale: d3.scaleOrdinal(d3.schemeTableau10)
   },
   price: {
-    scale: createDetailedPriceScale(50000, 500000, 10)
+    scale: createDetailedPriceScale(50000, 500000, 2)
   }
 };
 
@@ -72,17 +72,31 @@ document.addEventListener('DOMContentLoaded', init);
 
 // Toggle between historical and AI modes
 document.getElementById('toggle-mode-btn').addEventListener('click', () => {
-    mode = (mode === 'historical') ? 'ai' : 'historical';
-    const aiMode = mode === 'ai';
-    
-    // Show/hide relevant UI sections based on the selected mode
-    document.querySelector('.sidebar-section:first-child').style.display = aiMode ? 'none' : 'block';
-    document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
-    document.getElementById('toggle-mode-btn').textContent = aiMode ? 
-        'Переключить в исторический режим' : 'Переключить в режим прогнозирования';
-    
-    clearMap();
-    if (!aiMode) updateMap();
+  mode = (mode === 'historical') ? 'ai' : 'historical';
+  const aiMode = mode === 'ai';
+  
+  // Show/hide relevant UI sections based on the selected mode
+  document.querySelector('.sidebar-section:first-child').style.display = aiMode ? 'none' : 'block';
+  document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
+  document.getElementById('legend-container').style.display = aiMode ? 'none' : 'block';
+  document.getElementById('toggle-mode-btn').textContent = aiMode ? 
+      'Переключить в исторический режим' : 'Переключить в режим прогнозирования';
+  
+  clearMap();
+  if (!aiMode) {
+    updateLegend();
+    updateMap();
+  }
+});
+
+d3.select('#year-slider').on('input', () => {
+  updateMap();
+  updateLegend(); // Update legend when filters change
+});
+
+d3.select('#floor-slider').on('input', () => {
+  updateMap();
+  updateLegend(); // Update legend when filters change
 });
 
 // Handle AI form submission to generate Delaunay triangulation based on predictions
