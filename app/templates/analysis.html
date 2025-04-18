@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Анализ недвижимости{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="sidebar">
+    <div class="sidebar-section">
+        <h3>Фильтры</h3>
+        <div class="filter-group">
+            <label for="year-slider">Год:</label>
+            <input type="range" id="year-slider" min="2018" max="2025" value="2018">
+            <span id="year-value">2018</span>
+        </div>
+        <div class="filter-group">
+            <label for="floor-slider">Мин. этаж:</label>
+            <input type="range" id="floor-slider" min="1" max="10" value="1">
+            <span id="floor-value">1</span>
+        </div>
+        <div class="filter-group">
+            <label for="color-mode">Цветовая шкала:</label>
+            <select id="color-mode">
+                <option value="cluster">Кластер</option>
+                <option value="price">Цена за м²</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="sidebar-section" id="ai-controls" style="display:none;">
+        <h3>Прогнозирование</h3>
+        <form id="ai-form">
+            <div class="form-group">
+                <label>Дата:</label>
+                <input type="date" name="date" required value="2025-01-02">
+            </div>
+            <div class="form-group">
+                <label>Этаж:</label>
+                <input type="number" name="floor" value="5">
+            </div>
+            <div class="form-group">
+                <label>Комнаты:</label>
+                <input type="number" name="rooms_count" value="2">
+            </div>
+            <div class="form-group">
+                <label>Этажность:</label>
+                <input type="number" name="floors_count" value="9">
+            </div>
+            <div class="form-group">
+                <label>Метраж:</label>
+                <input type="number" name="total_meters" value="85">
+            </div>
+            <button type="submit" class="cbr-button">Рассчитать</button>
+        </form>
+    </div>
+
+    <div class="sidebar-section" id="legend-container">
+        <h3>Легенда</h3>
+        <div id="legend"></div>
+    </div>
+</div>
+
+<div class="map-container">
+    <div id="map"></div>
+    <div class="mode-toggle">
+        <button id="toggle-mode-btn" class="cbr-button">Переключить в режим прогнозирования</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/legend.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

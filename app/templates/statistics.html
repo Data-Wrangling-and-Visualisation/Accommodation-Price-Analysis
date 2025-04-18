@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block head %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h2>Статистика цен на недвижимость</h2>
+    <div class="description">
+        <p>Динамика ипотечных ставок тесно связана с макроэкономическими факторами:</p>
+        <ul>
+            <li><strong>2018–2019:</strong> Снижение ставок благодаря господдержке.</li>
+            <li><strong>2020:</strong> Пандемия вызвала временный рост ставок.</li>
+            <li><strong>2021–2022:</strong> Увеличение инфляции привело к повышению ставок.</li>
+            <li><strong>2023:</strong> Стабилизация рынка и снижение ключевой ставки ЦБ РФ.</li>
+        </ul>
+    </div>
+    <div class="chart-container">
+        <h3>Динамика ипотечных ставок</h3>
+        <div id="chart"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/mortgageChart.js') }}" type="module"></script>
+{% endblock %}
