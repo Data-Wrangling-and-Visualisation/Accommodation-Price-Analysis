@@ -1,14 +1,15 @@
-let data = [];
+  let data = [];
 let mode = 'historical';
 const colorModes = {
   cluster: {
     scale: d3.scaleOrdinal(d3.schemeTableau10)
   },
   price: {
-    scale: createDetailedPriceScale(50000, 500000, 10)
+    scale: createDetailedPriceScale(50000, 500000, 2)
   }
 };
 
+// Create a detailed price scale with smooth color interpolation
 function createDetailedPriceScale(minValue, maxValue, numCategories) {
   const domain = d3.range(minValue, maxValue + 1, (maxValue - minValue) / (numCategories - 1));
   const colors = d3.interpolateRgbBasis(['#32CD32', '#FFD700', '#FF4500', '#8B0000']);
@@ -16,7 +17,7 @@ function createDetailedPriceScale(minValue, maxValue, numCategories) {
   return d3.scaleLinear().domain(domain).range(range);
 }
 
-// Функция для извлечения параметров из формы AI
+// Extract parameters from the AI form and normalize them for API usage
 function getAIFormParameters(form) {
   const formData = new FormData(form);
   const params = Object.fromEntries(formData.entries());
@@ -28,7 +29,7 @@ function getAIFormParameters(form) {
   return params;
 }
 
-// Функция для вызова API предсказания
+// Call the extended prediction API to get price predictions and feature importance
 async function callExtendedPredictionAPI(payload) {
   const res = await fetch('/predict_with_importance', {
     method: 'POST',
@@ -38,6 +39,7 @@ async function callExtendedPredictionAPI(payload) {
   return await res.json();
 }
 
+// Call the basic prediction API to get only price predictions
 async function callPredictionAPI(payload) {
   const res = await fetch('/predict', {
     method: 'POST',
@@ -47,13 +49,12 @@ async function callPredictionAPI(payload) {
   return await res.json();
 }
 
-// Функция для отрисовки слоя Делоне (вместо heatmap)
-// heatmapData — массив формата [lat, lon, price]
+// Render Delaunay triangulation layer using heatmap data in [lat, lon, price] format
 function renderDelaunay(heatmapData) {
   drawDelaunayLayer(heatmapData);
 }
 
-// Основная инициализация
+// Initialize the application by fetching data and setting up the map and filters
 async function init() {
   try {
     const response = await fetch('/data');
@@ -63,35 +64,47 @@ async function init() {
     initFilters(data);
     updateMap();
   } catch (error) {
-    console.error('Ошибка инициализации:', error);
+    console.error('Initialization error:', error);
   }
 }
 
 document.addEventListener('DOMContentLoaded', init);
 
-// Переключатель режимов
-// main.js - Update the mode toggle functionality
+// Toggle between historical and AI modes
 document.getElementById('toggle-mode-btn').addEventListener('click', () => {
-    mode = (mode === 'historical') ? 'ai' : 'historical';
-    const aiMode = mode === 'ai';
-    
-    document.querySelector('.sidebar-section:first-child').style.display = aiMode ? 'none' : 'block';
-    document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
-    document.getElementById('toggle-mode-btn').textContent = aiMode ? 
-        'Исторический режим' : 'Симулятор Набиуллиной';
-    
-    clearMap();
-    if (!aiMode) updateMap();
+  mode = (mode === 'historical') ? 'ai' : 'historical';
+  const aiMode = mode === 'ai';
+  
+  // Show/hide relevant UI sections based on the selected mode
+  document.querySelector('.sidebar-section:first-child').style.display = aiMode ? 'none' : 'block';
+  document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
+  document.getElementById('legend-container').style.display = aiMode ? 'none' : 'block';
+  document.getElementById('toggle-mode-btn').textContent = aiMode ? 
+      'Переключить в исторический режим' : 'Переключить в режим прогнозирования';
+  
+  clearMap();
+  if (!aiMode) {
+    updateLegend();
+    updateMap();
+  }
 });
 
-// Rest of the main.js remains the same
+d3.select('#year-slider').on('input', () => {
+  updateMap();
+  updateLegend(); // Update legend when filters change
+});
 
-// Обработка отправки формы AI
+d3.select('#floor-slider').on('input', () => {
+  updateMap();
+  updateLegend(); // Update legend when filters change
+});
+
+// Handle AI form submission to generate Delaunay triangulation based on predictions
 document.getElementById('ai-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMap();
 
-  // 1. Извлечение параметров формы
+  // Extract common parameters from the form
   const commonParams = getAIFormParameters(e.target);
 
   const response = await fetch('/data');

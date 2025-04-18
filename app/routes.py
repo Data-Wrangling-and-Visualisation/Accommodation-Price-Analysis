@@ -36,6 +36,18 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/statistics')
+def statistics():
+    return render_template('statistics.html')
+
+@app.route('/analysis')
+def analysis():
+    return render_template('analysis.html')
+
+@app.route('/info-data')
+def data():
+    return render_template('data.html')
+
 @app.route('/js/<path:path>')
 def serve_js(path):
     return send_from_directory('static/js', path)

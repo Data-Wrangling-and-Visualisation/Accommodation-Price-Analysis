@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Анализ цен на недвижимость{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cbr-style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header class="cbr-header">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='img/cbr-logo.png') }}" alt="ЦБ РФ глобус онлайн оффлайн везде и всюду" class="logo">
+                <h1>Анализ цен на недвижимость в Сочи</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/statistics">Статистика</a></li>
+                    <li><a href="/analysis">Анализ недвижимости</a></li>
+                    <li><a href="/info-data">Данные</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="cbr-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="cbr-footer">
+        <div class="footer-container">
+            <p>&copy; 2025 Анализ цен на недвижимость</p>
+            <div class="footer-links">
+                <a href="https://github.com/Data-Wrangling-and-Visualisation/Accommodation-Price-Analysis" target="_blank" rel="noopener noreferrer">
+                    GitHub
+                </a>
+                <a href="mailto:d.khachikov@innopolis.university">Контакты</a>
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
