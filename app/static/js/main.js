@@ -1,4 +1,4 @@
-let data = [];
+  let data = [];
 let mode = 'historical';
 const colorModes = {
   cluster: {
@@ -107,26 +107,35 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
   // Extract common parameters from the form
   const commonParams = getAIFormParameters(e.target);
 
-  // Fetch data and select a random sample of points
   const response = await fetch('/data');
   const allData = await response.json();
   const sample = allData.sort(() => 0.5 - Math.random()).slice(0, 50);
 
-  // Predict prices for each point in the sample and prepare Delaunay points
-  const delaunayPoints = await Promise.all(sample.map(async (point) => {
-    const payload = { 
-      ...commonParams, 
-      latitude: point.latitude, 
-      longitude: point.longitude 
-    };
-
-    const result = await callPredictionAPI(payload);
-    return [point.latitude, point.longitude, result.price];
+  // Prepare batch payload
+  const batchPayload = sample.map(point => ({
+    ...commonParams,
+    latitude: point.latitude,
+    longitude: point.longitude
   }));
+
+  // Call batch prediction API
+  const result = await fetch('/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(batchPayload)
+  });
+  const predictions = await result.json();
+
+  // Prepare Delaunay points
+  const delaunayPoints = sample.map((point, index) => [
+    point.latitude,
+    point.longitude,
+    predictions.prices[index]
+  ]);
 
   // Render Delaunay triangulation with the predicted points
   renderDelaunay(delaunayPoints);
 
-  // Store prediction points for further operations (e.g., finding the nearest point)
+  // Store prediction points for further operations
   aiPredictionPoints = delaunayPoints.map(p => ({ lat: p[0], lon: p[1], price: p[2] }));
 });

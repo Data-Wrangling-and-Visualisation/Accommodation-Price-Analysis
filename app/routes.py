@@ -95,12 +95,47 @@ def get_input_data():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    date, input_data = get_input_data()
+    data_list = request.json  # Expect a list of input data
     
-    inflation_factor = calculate_inflation_factor("2019-01-01", date, inflation_data, forecast_value=0.1)
-    prediction = inflation_factor * input_data.iloc[0]['total_meters'] * math.exp(model.predict(input_data)[0])
+    # Prepare batch input
+    batch_data = []
+    for data in data_list:
+        dists = calculate_dists(data['latitude'], data['longitude'], poi_coords)
+        data = {**data, **dists}
+        
+        date = pd.to_datetime(data['date'])
+        nearest_date = inflation_data.index[inflation_data.index.get_indexer([date], method='nearest')[0]]
+        nearest_economic_data = inflation_data.loc[nearest_date]
+        
+        economic_features = {
+            'Yearly rate (%)': nearest_economic_data['Yearly rate (%)'],
+            'New mortgages': nearest_economic_data['New mortgages'],
+            'New mortgage amount (millions)': nearest_economic_data['New mortgage amount (millions)']
+        }
+        data = {**data, **economic_features}
+        
+        input_data = pd.DataFrame([data]).drop(columns=['date'], errors='ignore')
+        input_data = input_data[expected_feature_names]
+        batch_data.append(input_data)
     
-    return jsonify({'price': prediction})
+    # Combine all input data into a single DataFrame
+    batch_input = pd.concat(batch_data, ignore_index=True)
+    
+    # Calculate inflation factors for each date
+    inflation_factors = [
+        calculate_inflation_factor("2019-01-01", pd.to_datetime(data['date']), inflation_data, forecast_value=0.1)
+        for data in data_list
+    ]
+    
+    # Make predictions
+    predictions = model.predict(batch_input)
+    adjusted_predictions = [
+        inflation_factors[i] * batch_input.iloc[i]['total_meters'] * math.exp(predictions[i])
+        for i in range(len(predictions))
+    ]
+    
+    # Return results as JSON
+    return jsonify({'prices': adjusted_predictions})
 
 @app.route('/predict_with_importance', methods=['POST'])
 def predict_with_importance():
