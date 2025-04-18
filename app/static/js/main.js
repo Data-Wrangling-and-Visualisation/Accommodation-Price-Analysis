@@ -79,7 +79,7 @@ document.getElementById('toggle-mode-btn').addEventListener('click', () => {
     document.querySelector('.sidebar-section:first-child').style.display = aiMode ? 'none' : 'block';
     document.getElementById('ai-controls').style.display = aiMode ? 'block' : 'none';
     document.getElementById('toggle-mode-btn').textContent = aiMode ? 
-        'Historical Mode' : 'Nabiyullina Simulator';
+        'Переключить в исторический режим' : 'Переключить в режим прогнозирования';
     
     clearMap();
     if (!aiMode) updateMap();
