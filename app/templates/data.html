@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Данные{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h2>Данные</h2>
+    <p>Здесь вы можете скачать исходные данные, используемые для анализа:</p>
+    <ul>
+        <li><a href="{{ url_for('static', filename='data/sample.csv') }}">Пример данных (CSV)</a></li>
+        <li><a href="{{ url_for('static', filename='data/full_data.zip') }}">Полный набор данных (ZIP)</a></li>
+    </ul>
+</div>
+{% endblock %}

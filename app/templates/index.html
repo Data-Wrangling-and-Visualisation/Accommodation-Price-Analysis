@@ -1,120 +1,32 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ цен на недвижимость</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/cbr-style.css') }}">
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-</head>
-<body>
-    <header class="cbr-header">
-        <div class="header-container">
-            <div class="logo-container">
-                <img src="{{ url_for('static', filename='img/cbr-logo.png') }}" alt="ЦБ РФ глобус онлайн оффлайн везде и всюду" class="logo">
-                <h1>Сочинский филиал клуба фанатов Н</h1>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="#">Главная</a></li>
-                    <li><a href="#">Статистика</a></li>
-                    <li class="active"><a href="#">Анализ недвижимости</a></li>
-                    <li><a href="#">Данные</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% extends "base.html" %}
 
-    <main class="cbr-main">
-        <div class="sidebar">
-            <div class="sidebar-section">
-                <h3>Фильтры</h3>
-                <div class="filter-group">
-                    <label for="year-slider">Год:</label>
-                    <input type="range" id="year-slider" min="2018" max="2025" value="2018">
-                    <span id="year-value">2018</span>
-                </div>
+{% block title %}Главная{% endblock %}
 
-                <div class="filter-group">
-                    <label for="floor-slider">Мин. этаж:</label>
-                    <input type="range" id="floor-slider" min="1" max="10" value="1">
-                    <span id="floor-value">1</span>
-                </div>
+{% block content %}
+<div class="content">
+    <h2>Добро пожаловать!</h2>
+    <p>Этот сайт предназначен для анализа цен на недвижимость и исследования макроэкономических факторов.</p>
+    <p>Используйте меню сверху для навигации:</p>
+    <ul>
+        <li><strong>Статистика:</strong> Изучите динамику ипотечных ставок и другие показатели.</li>
+        <li><strong>Анализ недвижимости:</strong> Исследуйте данные о ценах на квартиры с помощью интерактивной карты.</li>
+        <li><strong>Данные:</strong> Получите доступ к сырым данным, используемым для анализа.</li>
+    </ul>
 
-                <div class="filter-group">
-                    <label for="color-mode">Цветовая шкала:</label>
-                    <select id="color-mode">
-                        <option value="cluster">Кластер</option>
-                        <option value="price">Цена за м²</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="sidebar-section" id="ai-controls" style="display:none;">
-                <h3>Прогнозирование</h3>
-                <form id="ai-form">
-                    <div class="form-group">
-                        <label>Дата:</label>
-                        <input type="date" name="date" required value="2025-01-02">
-                    </div>
-                    <div class="form-group">
-                        <label>Этаж:</label>
-                        <input type="number" name="floor" value="5">
-                    </div>
-                    <div class="form-group">
-                        <label>Комнаты:</label>
-                        <input type="number" name="rooms_count" value="2">
-                    </div>
-                    <div class="form-group">
-                        <label>Этажность:</label>
-                        <input type="number" name="floors_count" value="9">
-                    </div>
-                    <div class="form-group">
-                        <label>Метраж:</label>
-                        <input type="number" name="total_meters" value="85">
-                    </div>
-                    <button type="submit" class="cbr-button">Рассчитать</button>
-                </form>
-            </div>
-
-            <div class="sidebar-section" id="legend-container">
-                <h3>Легенда</h3>
-                <div id="legend"></div>
-            </div>
-        </div>
-
-        <div class="content">
-            <div class="map-container">
-                <div id="map"></div>
-                <div class="mode-toggle">
-                    <button id="toggle-mode-btn" class="cbr-button">Переключить в режим прогнозирования</button>
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <h3>Динамика ипотечных ставок</h3>
-                <div id="chart"></div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="cbr-footer">
-        <div class="footer-container">
-            <p>© 1998—2023 Центральный Банк Российской Федерации</p>
-            <p>Все права защищены</p>
-        </div>
-    </footer>
-
-    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/legend.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/mortgageChart.js') }}" type="module"></script>
-</body>
-</html>
+    <div class="creators-section">
+        <h3>О создателях</h3>
+        <p>Этот проект был разработан командой студентов университета Иннополис и ЮФУ.</p>
+        <ul>
+            <li><strong>Давид Хачиков:</strong> B22-DS-02.</li>
+            <li><strong>Софья Гамершмидт:</strong> B22-DS-02.</li>
+            <li><strong>Артём Матевосян:</strong> B22-DS-01.</li>
+        </ul>
+        <p>
+            Исходный код проекта доступен на 
+            <a href="https://github.com/Data-Wrangling-and-Visualisation/Accommodation-Price-Analysis" target="_blank" rel="noopener noreferrer">
+                GitHub
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}
