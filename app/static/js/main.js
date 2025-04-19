@@ -109,7 +109,13 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
 
   const response = await fetch('/data');
   const allData = await response.json();
-  const sample = allData.sort(() => 0.5 - Math.random()).slice(0, 50);
+  
+  // Take random points
+  const sample = [];
+  while (sample.length < 150 && allData.length > 0) {
+    const randomIndex = Math.floor(Math.random() * allData.length);
+    sample.push(allData.splice(randomIndex, 1)[0]); // Удаляем элемент из allData
+  }
 
   // Prepare batch payload
   const batchPayload = sample.map(point => ({

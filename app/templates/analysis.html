@@ -14,16 +14,41 @@
 <div class="sidebar">
     <div class="sidebar-section">
         <h3>Фильтры</h3>
+
+        <!-- Year Filter -->
         <div class="filter-group">
             <label for="year-slider">Год:</label>
             <input type="range" id="year-slider" min="2018" max="2025" value="2018">
             <span id="year-value">2018</span>
         </div>
+
+        <!-- Floor Filter -->
         <div class="filter-group">
             <label for="floor-slider">Мин. этаж:</label>
             <input type="range" id="floor-slider" min="1" max="10" value="1">
             <span id="floor-value">1</span>
         </div>
+
+        <!-- Price Range Filter -->
+        <div class="filter-group">
+            <label for="price-min">Минимальная цена за м²:</label>
+            <input type="range" id="price-min" min="50000" max="500000" value="50000">
+            <span id="price-min-value">50 000 ₽</span>
+        </div>
+        <div class="filter-group">
+            <label for="price-max">Максимальная цена за м²:</label>
+            <input type="range" id="price-max" min="50000" max="500000" value="500000">
+            <span id="price-max-value">500 000 ₽</span>
+        </div>
+
+        <!-- Rooms Count Filter -->
+        <div class="filter-group">
+            <label for="rooms-slider">Количество комнат:</label>
+            <input type="range" id="rooms-slider" min="1" max="5" value="1">
+            <span id="rooms-value">1</span>
+        </div>
+
+        <!-- Color Mode Selector -->
         <div class="filter-group">
             <label for="color-mode">Цветовая шкала:</label>
             <select id="color-mode">

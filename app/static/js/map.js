@@ -11,10 +11,10 @@ function initMap() {
   map = L.map('map').setView([43.6, 39.7], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  // Заменяем MarkerClusterGroup на обычную группу слоев
-  markers = L.layerGroup().addTo(map); // Теперь точки не кластеризуются
+  // Replace MarkerClusterGroup with a regular layer group
+  markers = L.layerGroup().addTo(map); // Now points are not clustered
 
-  // Инициализация SVG-слоя для Делоне
+  // Initialize SVG layer for Delaunay
   initDelaunayOverlay();
   map.on('moveend zoomend', updateDelaunayOverlay);
   map.on('click', async (e) => {
@@ -39,7 +39,7 @@ function updateMap() {
   }
   updateLegend();
 
-  // Очищаем обычные маркеры
+  // Clear regular markers
   markers.clearLayers(); 
 
   filteredData.forEach(item => {
@@ -57,7 +57,7 @@ function updateMap() {
       Дата: ${item.date}<br>
       Кластер: ${item.cluster}
     `);
-    markers.addLayer(marker); // Добавляем маркеры напрямую
+    markers.addLayer(marker); // Add markers directly
   });
 }
 
