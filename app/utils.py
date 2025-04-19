@@ -1,7 +1,10 @@
+from scipy.spatial import KDTree
 from datetime import datetime
 import pandas as pd
 import numpy as np
 import os
+
+poi_trees = {}
 
 def load_data():
     df = pd.read_csv('./data/main_data.csv')
@@ -57,20 +60,45 @@ def calculate_inflation_factor(start_date: str, end_date: str, inflation_data: p
         total_months = (end_date - start_date).days / 30
         return (1 + forecast_value / 100) ** total_months
 
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371
-    phi1, phi2 = np.radians(lat1), np.radians(lat2)
-    dphi = np.radians(lat2 - lat1)
-    dlambda = np.radians(lon2 - lon1)
-    a = np.sin(dphi / 2) ** 2 + np.cos(phi1) * np.cos(phi2) * np.sin(dlambda / 2) ** 2
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
-    return R * c
+def initialize_kdtrees(poi_coords):
+    """
+    Initialize KDTree for each POI type globally using 3D coordinates.
+    """
+    global poi_trees
+    poi_trees = {
+        poi_type: KDTree(np.array([_to_3d(lat, lon) for lat, lon in points]))
+        for poi_type, points in poi_coords.items()
+    }
 
-def calculate_dists(lat, lon, poi_coords):
+def _to_3d(lat, lon):
+    """
+    Convert latitude and longitude to 3D Cartesian coordinates on a sphere.
+    """
+    R = 6371  # Earth radius in kilometers
+    lat_rad, lon_rad = np.radians(lat), np.radians(lon)
+    x = R * np.cos(lat_rad) * np.cos(lon_rad)
+    y = R * np.cos(lat_rad) * np.sin(lon_rad)
+    z = R * np.sin(lat_rad)
+    return [x, y, z]
+
+def calculate_dists(lat, lon):
+    """
+    Calculate the minimum distances to various Points of Interest (POI) using precomputed KDTree.
+    Distances are calculated in kilometers on the surface of the Earth.
+    """
+    query_point = np.array(_to_3d(lat, lon))
     min_distances = {}
-    for poi_type, points in poi_coords.items():
-        dist = float('inf')
-        for poi_lat, poi_lon in points:
-            dist = min(haversine(lat, lon, poi_lat, poi_lon), dist)
-        min_distances[f'dist_to_{poi_type}_km'] = dist
+
+    for poi_type, tree in poi_trees.items():
+        dist, _ = tree.query(query_point, k=1)  # Get nearest neighbor
+        # Convert Euclidean distance in 3D to great-circle distance
+        min_distances[f'dist_to_{poi_type}_km'] = _euclidean_to_great_circle(dist)
+
     return min_distances
+
+def _euclidean_to_great_circle(euclidean_dist):
+    """
+    Convert Euclidean distance in 3D space to great-circle distance on the sphere.
+    """
+    R = 6371  # Earth radius in kilometers
+    return R * np.arcsin(euclidean_dist / (2 * R)) * 2

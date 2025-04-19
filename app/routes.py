@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 import pandas as pd
 import numpy as np
 import pickle
 import shap
 import math
-from utils import load_data, filter_data, calculate_inflation_factor, calculate_dists
+from utils import load_data, filter_data, calculate_inflation_factor, calculate_dists, initialize_kdtrees
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 df = load_data()
@@ -21,14 +22,14 @@ inflation_data.set_index('date', inplace=True)
 with open('./data/poi_coords.pkl', 'rb') as f:
     poi_coords = pickle.load(f)
 
+initialize_kdtrees(poi_coords)
+
 expected_feature_names = [
     'rooms_count', 'floors_count', 'longitude', 'latitude', 'total_meters',
     'floor', 'dist_to_school_km', 'dist_to_bus_stop_km', 'dist_to_park_km',
     'dist_to_hospital_km', 'dist_to_sea_km', 'Yearly rate (%)',
     'New mortgages', 'New mortgage amount (millions)', 'dist_to_center_km'
 ]
-
-from flask import Flask, render_template, send_from_directory
 
 app = Flask(__name__)
 
@@ -73,7 +74,7 @@ def get_data():
 def get_input_data():
     data = request.json
     
-    dists = calculate_dists(data['latitude'], data['longitude'], poi_coords)
+    dists = calculate_dists(data['latitude'], data['longitude'])
     data = {**data, **dists}
     
     date = pd.to_datetime(data['date'])
@@ -95,46 +96,38 @@ def get_input_data():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data_list = request.json  # Expect a list of input data
-    
-    # Prepare batch input
-    batch_data = []
-    for data in data_list:
-        dists = calculate_dists(data['latitude'], data['longitude'], poi_coords)
-        data = {**data, **dists}
-        
+    data_list = request.json
+
+    def process_data(data):
+        dists = calculate_dists(data['latitude'], data['longitude'])
         date = pd.to_datetime(data['date'])
         nearest_date = inflation_data.index[inflation_data.index.get_indexer([date], method='nearest')[0]]
         nearest_economic_data = inflation_data.loc[nearest_date]
-        
+
         economic_features = {
             'Yearly rate (%)': nearest_economic_data['Yearly rate (%)'],
             'New mortgages': nearest_economic_data['New mortgages'],
             'New mortgage amount (millions)': nearest_economic_data['New mortgage amount (millions)']
         }
-        data = {**data, **economic_features}
-        
-        input_data = pd.DataFrame([data]).drop(columns=['date'], errors='ignore')
-        input_data = input_data[expected_feature_names]
-        batch_data.append(input_data)
-    
-    # Combine all input data into a single DataFrame
-    batch_input = pd.concat(batch_data, ignore_index=True)
-    
-    # Calculate inflation factors for each date
+        input_row = {**data, **dists, **economic_features}
+        return input_row
+
+    with ThreadPoolExecutor() as executor:
+        batch_data = list(executor.map(process_data, data_list))
+
+    batch_input = pd.DataFrame(batch_data).drop(columns=['date'], errors='ignore')
+    batch_input = batch_input[expected_feature_names]
+
+    predictions = model.predict(batch_input)
     inflation_factors = [
         calculate_inflation_factor("2019-01-01", pd.to_datetime(data['date']), inflation_data, forecast_value=0.1)
         for data in data_list
     ]
-    
-    # Make predictions
-    predictions = model.predict(batch_input)
     adjusted_predictions = [
         inflation_factors[i] * batch_input.iloc[i]['total_meters'] * math.exp(predictions[i])
         for i in range(len(predictions))
     ]
-    
-    # Return results as JSON
+
     return jsonify({'prices': adjusted_predictions})
 
 @app.route('/predict_with_importance', methods=['POST'])
