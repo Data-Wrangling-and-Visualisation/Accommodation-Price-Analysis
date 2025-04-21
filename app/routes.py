@@ -1,9 +1,12 @@
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory, send_file
 import pandas as pd
 import numpy as np
 import pickle
 import shap
 import math
+import zipfile
+from io import BytesIO
+import os
 from utils import load_data, filter_data, calculate_inflation_factor, calculate_dists, initialize_kdtrees
 from concurrent.futures import ThreadPoolExecutor
 
@@ -159,6 +162,30 @@ def mortgage_data():
     df.sort_values('date', inplace=True)
     df['date'] = df['date'].dt.strftime('%Y-%m-%d')  # convert back to string
     return jsonify(df.to_dict(orient='records'))
+
+@app.route('/download_full_data')
+def download_full_data():
+    data_folder = os.path.join(app.root_path, 'data')
+    
+    zip_buffer = BytesIO()
+    
+    # Generate the ZIP file
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for root, dirs, files in os.walk(data_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, data_folder)  # Относительный путь внутри архива
+                zip_file.write(file_path, arcname)
+    
+    zip_buffer.seek(0)
+    
+    # Send the ZIP file as a response
+    return send_file(
+        zip_buffer,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name='full_data.zip'
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

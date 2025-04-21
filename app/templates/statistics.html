@@ -22,6 +22,15 @@
         <h3>Динамика ипотечных ставок</h3>
         <div id="chart"></div>
     </div>
+
+    <!-- Embed SHAP visualization -->
+    <h3>Влияние факторов на предсказание модели</h3>
+    <div class="shap-visualization">
+        <p style="text-align: center; font-style: italic;">Пролистайте вправо, чтобы увидеть все данные.</p>
+        <div class="scroll-container">
+            <iframe src="{{ url_for('static', filename='shap_force_plot.html') }}" width="100%" height="600px" frameborder="0"></iframe>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

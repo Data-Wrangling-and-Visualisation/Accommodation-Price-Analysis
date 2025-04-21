@@ -15,3 +15,5 @@ flask
 folium
 shap
 xgboost
+nbformat>=4.2.0
+seaborn
