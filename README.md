@@ -57,7 +57,7 @@ Accommodation-Price-Analysis/
 3. **Access the application**:
    Open your browser and navigate to [http://localhost:5000](http://localhost:5000).
 
-### Installation (Dockerized, recommended)
+### Installation (Direct)
 
 1. **Clone the repository**:
    ```bash
