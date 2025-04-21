@@ -2,11 +2,17 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    image: python:3.10-slim
+    build: "./app"
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
+      - "./app:/app"
     environment:
       - FLASK_ENV=development
+    working_dir: /app
+    tty: true
+    entrypoint: 
+      - bash
+      - /app/run.sh
 
