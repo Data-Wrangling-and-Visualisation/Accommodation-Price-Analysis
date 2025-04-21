@@ -18,14 +18,18 @@ The repository is organized as follows:
 ```
 Accommodation-Price-Analysis/
 ├── app/                     # Backend and frontend code for the web application
+│   ├── data/                # Small data (csv and pkl) files served via backend
 │   ├── model/               # Stores ML model for price prediction
 │   ├── static/              # Static assets (CSS, JavaScript, images)
 │   ├── templates/           # HTML templates for rendering views
+│   ├── requirements.txt     # A separate set of requirements for the webapp
 │   ├── routes.py            # Flask routes and application logic
+│   ├── run.sh               # The script to run inside the Docker container to run the webapp
 │   └── utils.py             # Helper functions and utilities
-├── notebooks/               # Jupyter notebooks for exploratory data analysis
-├── requirements.txt         # Python dependencies
-├── README.md
+├── notebooks/               # Jupyter notebooks for the initial exploratory data analysis
+├── docker-compose.yml       # Docker Compose setup
+├── requirements.txt         # Python dependencies for the development
+├── README.md                # You are here! :)
 └── .gitignore
 ```
 
