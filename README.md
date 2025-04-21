@@ -37,7 +37,23 @@ Accommodation-Price-Analysis/
 - Python 3.8 or higher
 - A modern web browser
 
-### Installation
+### Installation (Dockerized, recommended)
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Data-Wrangling-and-Visualisation/Accommodation-Price-Analysis.git
+   cd Accommodation-Price-Analysis
+   ```
+
+2. **Run via Docker**:
+   ```bash
+   docker compose up
+   ```
+
+3. **Access the application**:
+   Open your browser and navigate to [http://localhost:5000](http://localhost:5000).
+
+### Installation (Dockerized, recommended)
 
 1. **Clone the repository**:
    ```bash
