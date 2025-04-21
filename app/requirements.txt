@@ -1,0 +1,14 @@
+pandas
+numpy
+folium
+shapely
+matplotlib
+shapely
+overpy
+plotly
+geopy
+scikit-learn
+flask
+folium
+shap
+xgboost
