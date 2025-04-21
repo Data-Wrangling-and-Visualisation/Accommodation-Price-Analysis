@@ -1,40 +1,27 @@
 let map;
 let markers;
-let delaunaySvg;     // SVG-слой для триангуляции Делоне
-let delaunayGroup;   // Группа внутри SVG для отрисовки треугольников
+let delaunaySvg;     // SVG layer for Delaunay triangulation
+let delaunayGroup;   // Group inside SVG for drawing triangles
 let aiPredictionPoints = [];
-let currentDelaunayData = null; // Храним данные, чтобы корректно их перестраивать при изменении масштаба
+let currentDelaunayData = null; // Store data to correctly rebuild it on zoom changes
+
+const MAX_POINTS = 1000;
 
 function initMap() {
   map = L.map('map').setView([43.6, 39.7], 12);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  markers = L.markerClusterGroup({
-    maxClusterRadius: 80,
-    spiderfyOnMaxZoom: true,
-    showCoverageOnHover: false
-  });
-  markers.addTo(map);
+  // Replace MarkerClusterGroup with a regular layer group
+  markers = L.layerGroup().addTo(map); // Now points are not clustered
 
-  // Инициализация SVG-слоя для триангуляции Делоне
+  // Initialize SVG layer for Delaunay
   initDelaunayOverlay();
-
-  // При изменении положения или зума карты обновляем оверлей и пересчитываем проекции
   map.on('moveend zoomend', updateDelaunayOverlay);
-
-  // Обработка клика для AI-предсказания
   map.on('click', async (e) => {
     if (mode !== 'ai') return;
-
     const { lat, lng } = e.latlng;
     const commonParams = getAIFormParameters(document.getElementById('ai-form'));
-    const payload = { 
-      ...commonParams, 
-      latitude: lat, 
-      longitude: lng
-    };
-
+    const payload = { ...commonParams, latitude: lat, longitude: lng };
     const result = await callExtendedPredictionAPI(payload);
     showSHAPPopup(lat, lng, result);
   });
@@ -44,10 +31,17 @@ function updateMap() {
   if (mode !== 'historical') return;
   if (!markers) return;
 
-  const filteredData = filterData(data);
+  let filteredData = filterData(data);
+  if (filteredData.length > MAX_POINTS) {
+    filteredData = filteredData
+      .sort(() => 0.5 - Math.random())
+      .slice(0, MAX_POINTS);
+  }
   updateLegend();
 
-  markers.clearLayers();
+  // Clear regular markers
+  markers.clearLayers(); 
+
   filteredData.forEach(item => {
     const color = getColor(item);
     const marker = L.circleMarker([item.latitude, item.longitude], {
@@ -59,11 +53,11 @@ function updateMap() {
       fillOpacity: 0.8
     }).bindPopup(`
       Цена: ${d3.format(",")(item.price)} ₽<br>
-      Цена/м²: ${d3.format(",.0f")(item.price_per_sqm_adjusted)} ₽<br>
+      Цена/м²: ${d3.format(",.0f")(item.price_per_sqm)} ₽<br>
       Дата: ${item.date}<br>
       Кластер: ${item.cluster}
     `);
-    markers.addLayer(marker);
+    markers.addLayer(marker); // Add markers directly
   });
 }
 
@@ -73,7 +67,7 @@ function clearMap() {
 }
 
 /**
- * Инициализирует SVG-слой для триангуляции Делоне и добавляет его в overlayPane карты.
+ * Initializes the SVG layer for Delaunay triangulation and adds it to the map's overlayPane.
  */
 function initDelaunayOverlay() {
   delaunaySvg = d3.select(map.getPanes().overlayPane)
@@ -88,7 +82,7 @@ function initDelaunayOverlay() {
 }
 
 /**
- * Обновляет размеры и положение SVG-слоя для Делоне согласно текущим границам карты и перерисовывает треугольники.
+ * Updates the size and position of the Delaunay SVG layer according to the current map bounds and redraws triangles.
  */
 function updateDelaunayOverlay() {
   const bounds = map.getBounds();
@@ -101,39 +95,39 @@ function updateDelaunayOverlay() {
     .style("left", topLeft.x + "px")
     .style("top", topLeft.y + "px");
 
-  // Сдвигаем группу таким образом, чтобы координаты оставались неизменными относительно карты
+  // Shift the group so coordinates remain consistent relative to the map
   delaunayGroup.attr("transform", "translate(" + -topLeft.x + "," + -topLeft.y + ")");
 
-  // Если ранее заданы точки для отрисовки, пересчитываем их позиционирование
+  // If points for rendering were previously set, recalculate their positioning
   if (currentDelaunayData) {
     drawDelaunayLayer(currentDelaunayData);
   }
 }
 
 /**
- * Отрисовывает слой триангуляции Делоне.
- * @param {Array} points - Массив точек в формате [lat, lon, price].
+ * Draws the Delaunay triangulation layer.
+ * @param {Array} points - Array of points in the format [lat, lon, price].
  */
 function drawDelaunayLayer(points) {
-  // Сохраняем данные для возможности переотрисовки при зуме/панораме
+  // Save data for re-rendering on zoom/pan
   currentDelaunayData = points;
-  // Удаляем предыдущие треугольники
+  // Remove previous triangles
   delaunayGroup.selectAll("path").remove();
 
-  // Создаем цветовую шкалу для цены (от зелёного до темно-красного)
+  // Create a color scale for prices (from green to dark red)
   const prices = points.map(p => p[2]);
   const priceExtent = d3.extent(prices);
   const colorScale = d3.scaleLinear()
     .domain(priceExtent)
     .range(["#32CD32", "#8B0000"]);
 
-  // Переводим географические координаты в координаты слоя
+  // Convert geographic coordinates to layer coordinates
   const projectedPoints = points.map(p => {
     const pt = map.latLngToLayerPoint([p[0], p[1]]);
     return { x: pt.x, y: pt.y, price: p[2] };
   });
 
-  // Вычисляем Делоне триангуляцию
+  // Compute Delaunay triangulation
   const delaunay = d3.Delaunay.from(projectedPoints, d => d.x, d => d.y);
   const triangles = delaunay.triangles;
 
