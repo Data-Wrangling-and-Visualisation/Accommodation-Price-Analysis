@@ -174,7 +174,7 @@ def download_full_data():
         for root, dirs, files in os.walk(data_folder):
             for file in files:
                 file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, data_folder)  # Относительный путь внутри архива
+                arcname = os.path.relpath(file_path, data_folder)
                 zip_file.write(file_path, arcname)
     
     zip_buffer.seek(0)
