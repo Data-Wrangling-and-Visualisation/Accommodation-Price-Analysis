@@ -96,7 +96,7 @@ We explored multiple machine learning models for predicting accommodation prices
 - **Ensemble Techniques**: Tried a stacking approach that combined multiple regressors but introduced unnecessary complexity.
 - **Chosen Model: `xgboost`** — offered robust performance, handled feature importance well, and worked efficiently with our moderately-sized dataset.
 
-> `hgboost` (short for Hierarchical Gradient Boosting) combines tree-based boosting with improved handling of imbalanced and multi-dimensional data, making it ideal for our use case.
+> `xgboost` (short for Hierarchical Gradient Boosting) combines tree-based boosting with improved handling of imbalanced and multi-dimensional data, making it ideal for our use case.
 
 ---
 
