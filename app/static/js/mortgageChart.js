@@ -9,8 +9,8 @@ fetch('/api/mortgage-data')
       d.newMortgageAmount = +d["New mortgage amount (millions)"];
     });
 
-    const margin = {top: 20, right: 160, bottom: 30, left: 50},
-          width = 800 - margin.left - margin.right,
+    const margin = {top: 20, right: 400, bottom: 30, left: 50},
+          width = 1200 - margin.left - margin.right,
           height = 400 - margin.top - margin.bottom;
 
     const svg = d3.select("#chart").append("svg")
@@ -125,7 +125,7 @@ fetch('/api/mortgage-data')
             💰 Amount: ${d.newMortgageAmount.toLocaleString()}M
           `)
           .style("left", (x(d.date) + margin.left + 15) + "px")
-          .style("top", (yLeft(d.rate) + margin.top - 20) + "px");
+          .style("top", (yLeft(d.rate) + margin.top + 500) + "px");
       });
 
     // Legend
@@ -133,16 +133,16 @@ fetch('/api/mortgage-data')
       .data(["Yearly Rate (%)", "New Mortgages", "Mortgage Amount (millions)"])
       .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", (d, i) => `translate(0,${i * 20})`);
+      .attr("transform", (d, i) => `translate(0,${i * 30})`);
 
     legend.append("rect")
-      .attr("x", width + 20)
+      .attr("x", width + 60)
       .attr("width", 12)
       .attr("height", 12)
       .style("fill", d => color(d));
 
     legend.append("text")
-      .attr("x", width + 36)
+      .attr("x", width + 76)
       .attr("y", 6)
       .attr("dy", "0.35em")
       .text(d => d);
