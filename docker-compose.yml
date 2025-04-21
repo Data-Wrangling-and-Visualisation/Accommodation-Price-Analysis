@@ -3,7 +3,6 @@ version: '3.8'
 services:
   web:
     image: python:3.10-slim
-    build: "./app"
     ports:
       - "5000:5000"
     volumes:
